@@ -1,0 +1,20 @@
+{
+    "Filter": [
+        {
+            "From": ["ahihi@testing.com", "ahuu@testing.com"],
+            "ToFolder": "Project"
+        },
+        {
+            "Subject": ["urgent", "ASAP"],
+            "ToFolder": "Important"
+        },
+        {
+            "Content": ["report", "meeting"],
+            "ToFolder": "Work"
+        },
+        {
+            "Spam": ["virus", "hack", "crack"],
+            "ToFolder": "Spam"
+        }
+    ]
+}
