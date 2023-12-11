@@ -4,14 +4,15 @@ import re
 import json
 from email import message_from_string
 import email
+from pathlib import Path
 BUFFER_SIZE=1024
 
-parent_path="D:/Python_Store"
+parent_path="D:/Python_Store/pop3_client"
 
-def Check_Exist_msg(msg_name,folder_path):
-    for str in folder_path:
+def Check_Exist_msg(msg_name,folder_paths):
+    for str in folder_paths:
         msg_path=os.path.join(str,msg_name)
-        if msg_path.exist():
+        if Path(msg_path).exist():
             return True
     return False
 
@@ -65,13 +66,34 @@ def Download_msgFile(order,msg_name,folder_path,clientSocket,pair_from,pair_subj
     file.read(raw_email)
     file.close()
 
-def Get_folder_path(parent_path,pair_from_folder,pair_subject_folder,pair_content_folder,pair_spam_folder):
+def Get_folder_path(parent_path,from_folder,subject_folder,content_folder,spam_folder):
     folder_path=[]
-    folder_path.append(os.path.join(parent_path,pair_from_folder[1]))
-    folder_path.append(os.path.join(parent_path,pair_subject_folder[1]))
-    folder_path.append(os.path.join(parent_path,pair_content_folder[1]))
-    folder_path.append(os.path.join(parent_path,pair_spam_folder[1]))
+    t=os.path.join(parent_path,"Inbox")
+    if not Path(t).exists():
+        Path(t).mkdir()
+    folder_path.append(t)
+    t=os.path.join(parent_path,from_folder)
+    if not Path(t).exists():
+        Path(t).mkdir()
+    folder_path.append(t)
+    t=os.path.join(parent_path,subject_folder)
+    if not Path(t).exists():
+        Path(t).mkdir()
+    folder_path.append(t)
+    t=os.path.join(parent_path,content_folder)
+    if not Path(t).exists():
+        Path(t).mkdir()
+    folder_path.append(t)
+    t=os.path.join(parent_path,spam_folder)
+    if not Path(t).exists():
+        Path(t).mkdir()
+    folder_path.append(t)
     return folder_path
+
+def Get_list_msg(UIDL):
+    while 1:
+        print(1)
+
 #Read File Config Start
 f=open("D:/Python_Store/pop3_client/filter_Congif.json","r")
 filters=json.load(f)['Filter']
@@ -84,7 +106,10 @@ f.close()
 folder_paths=Get_folder_path(parent_path,pair_from_folder[1],pair_subject_folder[1],pair_content_folder[1],pair_spam_folder[1])
 user_email="nqvinhdongthap322004@gmail.com"
 user_pass="vinhdeptrai"
+host='127.0.0.1'
+port=3335
 clientSocket=socket(AF_INET,SOCK_STREAM)
+clientSocket.connect((host,port))
 clientSocket.recv(BUFFER_SIZE)
 clientSocket.sendall("CAPA\r\n".encode())
 clientSocket.recv(BUFFER_SIZE)
@@ -99,11 +124,8 @@ if(rev1[:5]=='OK 0 0'):
     clientSocket.close()
 clientSocket.sendall("LIST\r\n".encode())
 clientSocket.recv(1024) #OK
-while (rev := clientSocket.recv(1024)) != b'.':
-    msg_name=rev[2:]
-    order=rev[:1]
-    if Check_Exist_msg(msg_name,folder_paths,clientSocket)==False:
-        Download_msgFile(msg_name,folder_paths)
-
+clientSocket.sendall("UIDL\r\n".encode())
+recv_UIDL=clientSocket.recv(BUFFER_SIZE)
+list_msg=Get_list_msg(recv_UIDL)
 clientSocket.send("QUIT\r\n".encode())
 clientSocket.close()
